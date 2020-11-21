@@ -1,0 +1,653 @@
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+ 
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+ 
+.App-link {
+  color: #61dafb;
+}
+ 
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+ 
+/* .title{
+  text-align: center;
+  margin-bottom: 5vh;
+}
+ 
+.form-group{
+  display: block;
+  margin-left: 2vw;
+}
+
+form{
+  display: inline-block;
+  margin:auto;
+}
+
+#roles{
+  margin-top: 2vh;
+  margin-bottom: 3vh;
+}
+
+label{
+  margin-right:0.3vw;
+}
+
+.profileItem{
+  margin-bottom: 10px;
+}
+
+.center{
+  margin:auto;
+  display: inline-block;
+} */
+
+.navbar-inverse .navbar-nav>li>a{
+  color: white;
+  font-weight: bold;
+}
+
+.navbar-inverse .navbar-nav>li>a:hover{
+  color: yellow;
+}
+.navbar{
+  margin:0
+}
+.navbar-nav>li {
+  margin:0
+}
+
+/* .customerName:hover{
+  cursor: pointer;
+  color:powderblue;
+  text-decoration: underline;
+}
+
+.restaurantName:hover{
+  cursor: pointer;
+  color:rgb(0, 30, 128);
+  text-decoration: underline;
+}
+
+#eventsList{
+  margin-top: 5vh;
+}
+
+input{
+  display: block;
+  margin:auto;
+}
+
+.add{
+  font-size: 50px;
+  color:red;
+  display: block;
+  margin:auto
+}
+
+.add:hover{
+  cursor: pointer;
+}
+
+.header{
+  width: 95%;
+  margin-left: 3vw;
+}
+
+#restaurantHomeMenu{
+  width: 20%;
+  background-color:grey;
+}
+
+.restaurantState{
+  padding: 5vw;
+  color: white;
+  border-top: 1px solid white;
+}
+.restaurantState:hover {
+   cursor: pointer;
+   color: white;
+   background-color: black;
+} */
+body{
+  background-color: powderblue;
+}
+body,html,.App, #root{
+  height: 100%;
+  margin:0
+}
+/* #homeContainer div{
+  height: 100%
+} */
+#restaurantHomeMenu{
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding:0;
+  background-color: grey;
+  width:20%;
+  list-style: none;   
+}
+#homeContainer{
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  display: flex;
+  height:100%
+}
+#profile{
+  text-align: center;
+  flex:1;
+  /* background-color: powderblue; */
+}
+.restaurantState{
+  margin: 0;
+  flex: 1;
+  color:white;
+  border-top: 1px solid white;
+  font-size: 30px;
+  text-align: center;
+  padding:5vw }
+
+.restaurantState:hover{
+  background-color:black;   
+  color:white;
+  cursor: pointer;  
+}
+
+#content{
+  height:100%;
+  display:flex;
+  flex-direction: column;
+}
+#user{
+  display: flex;
+  border-bottom: 2px solid white;
+  border-top: 2px solid white;
+
+}
+.restInfo{
+  flex:1.5;
+  border-right: 2px solid white;
+}
+#custContent{
+  height:100%;
+  display:flex;
+  flex-direction: column;
+}
+
+#custUser{
+  display: flex;
+  border-bottom: 2px solid white;
+  border-top: 2px solid white;
+
+}
+.custInfo{
+  flex:1.5;
+  border-right: 2px solid white;
+}
+.custInfo label{
+text-decoration: underline;
+}
+#picture{
+  flex:1
+}
+label{
+  font-weight: bold;
+}
+
+.profile_list{
+  font-size: 18px;
+
+  list-style: none;
+}
+li{
+  margin-bottom: 2vh;
+}
+.update{
+  top:-1vh;
+  left:-35vw;
+  position: relative;
+}
+.custUpdate{
+  top:-1vh;
+  left:-35vw;
+  position: relative;
+}
+
+#logo{
+  position: absolute;
+  left:48vw;
+}
+.form-group{
+  display: block;
+  margin:auto
+}
+#upload{
+  position: absolute;
+  z-index: 1;
+}
+#profilePicture{
+  height: 100%;
+  width:100%;
+}
+
+#custProfilePicture{
+height: 100%;
+width:100%;
+}
+.profileTitle{
+  display: inline-block;
+}
+#savePicture{
+  position: absolute;
+  top:10vh;
+  left: 85vw;
+}
+
+#saveCustPicture{
+  position: absolute;
+  top:21.5vh;
+  left: 85vw;
+}
+
+/* customer menu css */
+#menu{
+  flex: 1;
+  display: flex;
+  text-align: center;
+  /* background-color: powderblue; */
+}
+#menu input{
+  width: 90%;
+}
+table {
+  width: 95%;
+margin-left: 1vw;
+font-family: arial, sans-serif;
+border-collapse: collapse;
+}
+
+th{
+  font-weight: bold;
+}
+td, th {
+  font-size: 16px;
+font-family: 'arial';
+border: 1px solid #dddddd;
+text-align: left;
+padding: 8px;
+}
+
+tr:nth-child(odd) {
+background-color:white;
+}
+tr:nth-child(even) {
+background-color: #dddddd;
+}
+#table{
+width: 70%;
+border-right: 1px solid white;
+}
+#addItem{
+flex:1;
+}
+#food_dscr{
+margin: 5vh;
+}
+.menuAdd{
+margin:1vh
+}
+#menuUpdate{
+position: relative;
+left: 125px;
+top: -43px;
+}
+.about{
+  font-size: 18px;
+}
+/* restuarnt orders */
+.orders{
+  text-align:center
+}
+.ordersTable{
+  width:50%;
+  margin:auto;
+}
+
+.ordersFilter{
+  margin-bottom:5vh;
+}
+.customerName:hover{
+  cursor: pointer;
+  color:blue;
+  text-decoration: underline;
+}
+
+.restName:hover{
+  cursor: pointer;
+  color:blue;
+  text-decoration: underline;
+}
+
+
+/* restaurant customer review */
+#reviews{
+  color: white;
+  list-style: none;
+}
+#reviewsContainer{
+  width: 100%;
+  text-align: center;
+}
+.review{
+  display: flex;
+  margin-bottom: 5vh;;
+  width: 90%;
+  margin-left: 5%;
+  background-color: maroon;
+  border-bottom: 1px solid black;
+}
+.customerReview{
+  flex: 1;
+  border-right: 1px solid white;
+}
+.comment{
+  margin-left: 0.5vw;
+  flex: 3;
+  text-align: justify;
+  font-size: 20px;
+}
+
+ .title{
+  margin-bottom: 5vh;
+}
+
+/* restaurant events */
+#eventsTitle{
+  text-align: center;
+  margin-bottom: 5vh;
+}
+.event{
+  text-align: center;
+  background-color: white;
+  width:28vw;
+  height:42vh;
+  display: inline-block;
+  margin-left: 3vw;
+  margin-bottom: 3vh;
+  border: 3px solid black;
+}
+.event:hover{
+  background-color:purple;
+  color: yellow;
+  cursor: pointer;
+}
+.eventName{
+  position: relative;
+  top: 10vh;
+}
+.eventName h1{
+  font-weight: bold;
+}
+
+
+#addEvent{
+  font-weight: bold;
+  text-align: center;
+  background-color: yellow;
+  width:28vw;
+  height:42vh;
+  display: inline-block;
+  margin-left: 3vw;
+  margin-bottom: 3vh;
+  border: 3px solid black;
+  position: absolute;
+}
+
+#addEvent input{
+  margin-bottom: 3vh;
+}
+
+/* rest search bar */
+#deliveryMode{
+  margin-left:1vw;
+}
+
+#restSearchContainer{
+  text-align: center;
+}
+#results{
+  margin-top: 5vh;
+}
+.result{
+  display: flex;
+  background-color: white;
+  border: 3px solid black;
+  width:60vw;
+  height:25vh;
+  margin-bottom: 3vh;
+  margin-left: 1.5vw;
+}
+.result div{
+  height:100%;
+}
+.searchImage{
+  width: 40%;
+ border-right: 2px solid black;
+
+}
+.restInfo{
+  flex: 1;
+}
+.restSearchImage{
+  width: 100%;
+  height: 100%;
+}
+
+.resultMap{
+   position: absolute;
+   left: 65vw;
+    height: 25vh;
+     width: 30vw;
+     border: 2px solid black;
+}
+
+/* event registration */
+#registrationContainer{
+  text-align: center;
+}
+#registrationTitle{
+  margin-bottom: 5vh;
+}
+#registeredTitle{
+text-align:center
+}
+#registeredCustomers{
+width:50%;
+margin: auto;
+}
+#eventDetails{
+  width: 60vw;
+  margin: auto;
+  background-color: white;
+  border: 4px solid black;
+}
+ul{
+  list-style: none;
+}
+.eventItem{
+  text-align: left;
+  font-size: 36px;
+}
+#eventDescription{
+  text-align: justify;
+  font-size: 24px;
+  border-top: 2px solid grey;
+}
+#register{
+margin-top: 8vh;
+}
+#searchEvent{
+  margin-right: 2vw;
+}
+#searchBar{
+  padding-top:2vh;
+  padding-bottom: 1vh;
+  background-color: teal;
+  border-bottom: 4px solid black;
+   text-align: center;
+}
+#searchBar button{
+margin-left:2vw;
+}
+
+/* restaurant tab on customer */
+      #restaurantContainer{
+            text-align: center;
+        }
+        #restPicture{
+            width: 20vw;
+            height:25vh;
+            left: 5vw;
+            position: absolute;
+
+        }
+        #numReviews{
+            position: relative;
+            left: 0.5vw
+        }
+        #restOptions{
+            width: 50%;
+            margin:auto
+        }
+        #restInfo{
+            margin-bottom: 5vh;
+        }
+        #restTitle{
+            margin-bottom: 3vh;
+        }
+        #restReviews{
+  margin-top: 20vh;
+  color: white;
+  list-style: none;
+}
+
+#custComment{
+  width: 75%;
+  margin-left: 3vw;
+  margin-top: 1vh;
+  color: black;
+}
+#ratingSelect{
+  color:black
+}
+
+#submitReview{
+  position: relative;
+  top: -2vh;
+  left: 1.5vw;
+}
+
+#orderFromTable{
+  margin-top:10vh;
+  margin:auto;
+  width:50%;
+}
+
+.quantity{
+  width:100%
+}
+
+.menuItem{
+  padding:4px;
+}
+
+.submitted{
+  background-color: #3cb52e;
+  text-align: center;
+}
+.form-signin {
+  width: 100%;
+  max-width: 330px;
+  padding: 15px;
+  margin: auto;
+}
+.form-signin .title {
+    text-align: center;
+  }
+.form-signin .checkbox {
+  font-weight: 400;
+}
+.form-signin .form-control {
+  position: relative;
+  box-sizing: border-box;
+  height: auto;
+  padding: 10px;
+  font-size: 16px;
+}
+.form-signin .form-control:focus {
+  z-index: 2;
+}
+.form-signin input[type="email"] {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.form-signin input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.signin{
+  display: inline-block;
+  margin-right: 0.5vw;
+  margin-left: 3vw;
+}
+
+#custPersonal{
+  display: flex;
+  flex-direction: column;
+}
+
+#contactInfo{
+  border-bottom: 2px white solid;
+  height: 30%;
+}
+
+.location{
+  height:35vh;
+}
+
+#addEventTitle{
+  margin: 0 0 1vh 0;
+}
+.eventInput{
+  width:50%;
+  margin:auto;
+}
+/* .status{
+  width:100%
+} */

@@ -1,0 +1,13 @@
+{
+    "eslint.codeAction.showDocumentation": {
+
+        "enable": true
+    },
+    "eslint.workingDirectories": [
+        "./Frontend"
+    ],
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    }
+
+}
