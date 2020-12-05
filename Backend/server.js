@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const graphqlHTTP = require('express-graphql');
+const schema = require('./schema/schema');
 
 const app = express();
 
@@ -34,6 +36,11 @@ app.use((req, res, next) => {
 app.use('/', require('./Routes/loginRoutes'));
 app.use('/restaurant', require('./Routes/restaurantRoutes'));
 app.use('/customer', require('./Routes/customerRoutes'));
+
+app.use('/graphql', graphqlHTTP({
+  schema,
+  graphiql: true
+}));
 
 app.listen(PORT, console.log(`Server is running on localhost:${PORT}...`));
 module.exports = app;
