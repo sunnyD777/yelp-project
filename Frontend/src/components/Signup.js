@@ -1,19 +1,38 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
+import { graphql } from 'react-apollo';
+import { flowRight as compose } from 'lodash';
 import { signUp, nameChangeHandler, emailChangeHandler, passwordChangeHandler, locationChangeHandler, roleChangeHandler } from '../actions/actions';
+import { signupMutation } from '../mutations';
 
 class Signup extends Component {
   signUp = (e) => {
     e.preventDefault();
     const { role, name, email, password, location } = this.props;
-    axios.post('/signup', { role, name, email, password, location })
-      .then((response) => {
-        delete response.data.password;
-        const { _id } = response.data;
-        this.props.signUp(response.data, _id, this.props.role);
-        console.log(response.data);
-      });
+    // axios.post('/signup', { role, name, email, password, location })
+    //   .then((response) => {
+    //     delete response.data.password;
+    //     const { _id } = response.data;
+    //     this.props.signUp(response.data, _id, this.props.role);
+    //     console.log(response.data);
+    //   });
+    this.props.signupMutation({
+      variables: {
+        name,
+        email,
+        password,
+        location,
+        role
+      }
+    }).then((data) => {
+      console.log(data);
+      const { status, content } = data.data.signup;
+      const { _id, password, ...user } = JSON.parse(content);
+      if (status === '200') {
+        this.props.signUp(user, _id, role);
+      }
+    });
   }
 
   render() {
@@ -78,4 +97,7 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Signup);
+export default compose(
+  graphql(signupMutation, { name: 'signupMutation' }),
+  connect(mapStateToProps, mapDispatchToProps)
+)(Signup);

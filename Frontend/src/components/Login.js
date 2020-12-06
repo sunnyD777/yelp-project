@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import axios from 'axios';
+import { graphql } from 'react-apollo';
+import { flowRight as compose } from 'lodash';
 import { login, emailChangeHandler, passwordChangeHandler, roleChangeHandler } from '../actions/actions';
+import { loginMutation } from '../mutations';
 
 class Login extends Component {
   handleLogin = (e) => {
@@ -9,14 +12,28 @@ class Login extends Component {
     const { role, email, password } = this.props;
     axios.defaults.withCredentials = true;
 
-    axios.post('/login', { role, email, password })
-      .then((response) => {
-        if (response.data) {
-          delete response.data.password;
-          const { _id } = response.data;
-          this.props.login(response.data, _id, this.props.role);
-        }
-      });
+    // axios.post('/login', { role, email, password })
+    //   .then((response) => {
+    //     if (response.data) {
+    //       delete response.data.password;
+    //       const { _id } = response.data;
+    //       this.props.login(response.data, _id, this.props.role);
+    //     }
+    //   });
+    this.props.loginMutation({
+      variables: {
+        email,
+        password,
+        role
+      }
+    }).then((data) => {
+      const { status, content } = data.data.login;
+      console.log(status, content);
+      const { _id, password, ...user } = JSON.parse(content);
+      if (status === '200') {
+        this.props.login(user, _id, role);
+      }
+    });
   }
 
   render() {
@@ -64,4 +81,7 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Login);
+export default compose(
+  graphql(loginMutation, { name: 'loginMutation' }),
+  connect(mapStateToProps, mapDispatchToProps)
+)(Login);
