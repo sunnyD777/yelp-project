@@ -1,87 +1,109 @@
 import axios from 'axios';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { initCustomer, updateProfile, profileChangeHandler, showUpdate, hideUpdate, hideUpload, pictureChangeHandler, uploadPicture } from '../../../actions/actions';
+import { graphql } from 'react-apollo';
+import { flowRight as compose } from 'lodash';
+import { updateProfile } from '../../../actions/actions';
 import ProfileItem from './ProfileItem';
-import unknown from '../../../unknown.jpg';
+import { updateCustomerMutation } from '../../../mutations';
 
 class Profile extends Component {
-  componentDidMount() {
-    axios.post('/customer', { id: this.props.id })
-      .then((response) => {
-        this.props.initCustomer();
-        console.log(response);
-      });
+  constructor(props) {
+    super(props);
+    this.state = {
+      ...props.user,
+      update: false,
+      selectedFile: null,
+      upload: false };
+  }
+
+  handleChange = (e) => {
+    this.setState({ [e.target.id]: e.target.value });
+  }
+
+  showUpdate = () => {
+    this.setState({ update: true });
   }
 
   saveUpdates = () => {
-    const { name, email, phone_num, about, birthday, city, state, country, nickname } = this.props.user;
-    const data = { name, email, phone_num, about, birthday, city, state, country, nickname };
+    const { name, email, phone_num, about, birthday, city, state, country, nickname, img } = this.state;
+    const data = { name, email, phone_num, about, birthday, city, state, country, nickname, img };
     this.props.updateProfile(data);
-    axios.post('/customer/updateProfile', data)
-      .then((response) => {
-        console.log(response);
-      });
-
-    this.props.hideUpdate();
+    // axios.post(`${BACK_SERVER_URL}/customer/updateProfile`, data)
+    //   .then((response) => {
+    //     console.log(response);
+    //   });
+    this.props.updateCustomerMutation({
+      variables: { ...data, id: this.props.id
+      }
+    }).then((data) => {
+      console.log(data);
+    });
+    this.setState({ update: false });
   }
 
   handleClick = () => {
     this.inputElement.click();
   }
 
+  pictureChangeHandler = (e) => {
+    console.log(e.target.files[0]);
+    this.setState({ selectedFile: e.target.files[0], upload: true });
+  }
+
   handleUpload = () => {
     const data = new FormData();
-    data.append('file', this.props.file);
+    data.append('file', this.state.selectedFile);
     console.log(data);
+    console.log(this.props.id);
     axios.post('/customer/upload', data, {
       headers: {
         'Content-Type': 'multipart/form-data'
       } })
       .then((res) => { // then print response status
         console.log(res.data);
-        this.props.hideUpload();
-        this.props.uploadPicture(res.data);
+        this.setState({ img: res.data, upload: false });
+        this.saveUpdates();
       });
   }
 
   render() {
-    const { user, update, upload } = this.props;
+    const { update, upload } = this.state;
     return (
       <div id="profile">
         <h1 className="profileTitle">Profile</h1>
         { update ? <button className="btn btn-primary custUpdate" onClick={this.saveUpdates}>Save Updates</button>
-          : <button className="btn btn-primary custUpdate" onClick={this.props.showUpdate}>Update Profile</button>}
+          : <button className="btn btn-primary custUpdate" onClick={this.showUpdate}>Update Profile</button>}
         {' '}
         <div id="custContent">
           <div id="custUser">
             <div className="custInfo">
               <h1>Basic Details</h1>
               <ul className="profile_list">
-                <ProfileItem handleChange={this.props.profileChangeHandler} label="Name" keyName="name" val={user.name} update={update} />
-                <ProfileItem handleChange={this.props.profileChangeHandler} label="Date of Birth" keyName="birthday" val={user.birthday} update={update} />
-                <ProfileItem handleChange={this.props.profileChangeHandler} label="City" keyName="city" val={user.city} update={update} />
-                <ProfileItem handleChange={this.props.profileChangeHandler} label="State" keyName="state" val={user.state} update={update} />
-                <ProfileItem handleChange={this.props.profileChangeHandler} label="Country" keyName="country" val={user.country} update={update} />
-                <ProfileItem handleChange={this.props.profileChangeHandler} label="Nickname" keyName="nickname" val={user.nickname} update={update} />
+                <ProfileItem handleChange={this.handleChange} label="Name" keyName="name" val={this.state.name} update={update} />
+                <ProfileItem handleChange={this.handleChange} label="Date of Birth" keyName="birthday" val={this.state.birthday} update={update} />
+                <ProfileItem handleChange={this.handleChange} label="City" keyName="city" val={this.state.city} update={update} />
+                <ProfileItem handleChange={this.handleChange} label="State" keyName="state" val={this.state.state} update={update} />
+                <ProfileItem handleChange={this.handleChange} label="Country" keyName="country" val={this.state.country} update={update} />
+                <ProfileItem handleChange={this.handleChange} label="Nickname" keyName="nickname" val={this.state.nickname} update={update} />
               </ul>
             </div>
             <div id="custPersonal" className="custInfo">
               <h1>Contact Info</h1>
               <ul id="contactInfo" className="profile_list">
-                <ProfileItem handleChange={this.props.profileChangeHandler} label="Email" keyName="email" val={user.email} update={update} />
-                <ProfileItem handleChange={this.props.profileChangeHandler} label="Phone Number" keyName="phone_num" val={user.phone_num} update={update} />
+                <ProfileItem handleChange={this.handleChange} label="Email" keyName="email" val={this.state.email} update={update} />
+                <ProfileItem handleChange={this.handleChange} label="Phone Number" keyName="phone_num" val={this.state.phone_num} update={update} />
               </ul>
               <div id="about">
                 <h1>About</h1>
-                {update ? <textarea id="about" value={user.about} onChange={this.props.profileChangeHandler} rows="10" cols="50" /> : <p>{user.about}</p>}
+                {update ? <textarea id="about" value={this.state.about} onChange={this.handleChange} rows="10" cols="50" /> : <p>{this.state.about}</p>}
               </div>
             </div>
             <div id="picture">
               <button onClick={this.handleClick} id="upload">+</button>
               {upload ? <button onClick={this.handleUpload} id="saveCustPicture" className="ybtn ybtn--small ybtn--green">Save Image</button> : null}
-              <input name="profilePicture" onChange={this.props.pictureChangeHandler} type="file" style={{ display: 'none' }} ref={(input) => this.inputElement = input} />
-              <img id="custProfilePicture" src={user.img} />
+              <input name="profilePicture" onChange={this.pictureChangeHandler} type="file" style={{ display: 'none' }} ref={(input) => this.inputElement = input} />
+              <img id="custProfilePicture" src={this.state.img} />
             </div>
           </div>
         </div>
@@ -94,23 +116,16 @@ const mapStateToProps = (state) => {
   return {
     user: state.user,
     id: state.id,
-    update: state.update,
-    file: state.file,
-    upload: state.upload
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    updateProfile: (user) => dispatch(updateProfile(user)),
-    profileChangeHandler: (e) => dispatch(profileChangeHandler(e)),
-    pictureChangeHandler: (e) => dispatch(pictureChangeHandler(e)),
-    uploadPicture: (img) => dispatch(uploadPicture(img)),
-    showUpdate: () => dispatch(showUpdate()),
-    hideUpdate: () => dispatch(hideUpdate()),
-    hideUpload: () => dispatch(hideUpload()),
-    initCustomer: () => dispatch(initCustomer())
+    updateProfile: (user) => dispatch(updateProfile(user))
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Profile);
+export default compose(
+  graphql(updateCustomerMutation, { name: 'updateCustomerMutation' }),
+  connect(mapStateToProps, mapDispatchToProps)
+)(Profile);

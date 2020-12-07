@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
+import { graphql } from 'react-apollo';
+import { flowRight as compose } from 'lodash';
 import RestaurantOrder from './RestuarantOrder';
+import { RestaurantInfoMutation, submitOrderMutation, submitReviewMutation } from '../../mutations';
 
 class RestaurantInfo extends Component {
   constructor(props) {
@@ -20,18 +23,35 @@ class RestaurantInfo extends Component {
   }
 
   componentDidMount() {
-    axios.get(`/customer/restaurantInfo/${this.props.match.params.id}`)
-      .then((response) => {
-        console.log(response.data);
-        const { reviews } = response.data;
-        let totalRating = 0;
-        const numReviews = reviews.length;
-        reviews.forEach((review) => {
-          totalRating += review.rating;
-        });
-        if (numReviews > 0) { this.setState({ avgRating: (totalRating / numReviews) }); }
-        this.setState({ restaurant: response.data, reviews: response.data.reviews, menu: response.data.menu });
+    // axios.get(`/customer/restaurantInfo/${this.props.match.params.id}`)
+    //   .then((response) => {
+    //     console.log(response.data);
+    //     const { reviews } = response.data;
+    //     let totalRating = 0;
+    //     const numReviews = reviews.length;
+    //     reviews.forEach((review) => {
+    //       totalRating += review.rating;
+    //     });
+    //     if (numReviews > 0) { this.setState({ avgRating: (totalRating / numReviews) }); }
+    //     this.setState({ restaurant: response.data, reviews: response.data.reviews, menu: response.data.menu });
+    //   });
+    console.log(this.props.match.params.id);
+    this.props.RestaurantInfoMutation({
+      variables: { id: this.props.match.params.id
+      }
+    }).then((data) => {
+      console.log(data);
+      const { status, content } = data.data.restaurantInfo;
+      const restaurant = JSON.parse(content);
+      const { reviews } = restaurant;
+      let totalRating = 0;
+      const numReviews = reviews.length;
+      reviews.forEach((review) => {
+        totalRating += review.rating;
       });
+      if (numReviews > 0) { this.setState({ avgRating: (totalRating / numReviews) }); }
+      this.setState({ restaurant, reviews: restaurant.reviews, menu: restaurant.menu });
+    });
     // axios.post('/restaurant/reviews', { id: this.props.match.params.id })
     //   .then((response) => {
     //     console.log(response.data);
@@ -64,14 +84,6 @@ class RestaurantInfo extends Component {
     this.setState({ orders });
   }
 
-  placeOrder = () => {
-    axios.post('/customer/placeOrder',
-      { orders: this.state.orders, orderType: this.state.orderType, cust_id: this.props.id, rest_id: this.props.match.params.id })
-      .then((results) => {
-        console.log(results);
-      });
-  }
-
   writeReview = () => {
     const writeReview = !this.state.writeReview;
     this.setState({ writeReview, orderMenu: false });
@@ -80,12 +92,21 @@ class RestaurantInfo extends Component {
   submitReview = (e) => {
     e.preventDefault();
     const { comment, rating } = this.state;
-    axios.post('/customer/submitReview',
-      { comment, rating, custId: this.props.id, restId: this.props.match.params.id, name: this.props.name })
-      .then((results) => {
-        console.log(results);
-        this.setState({ reviews: results.data, writeReview: false });
-      });
+    // axios.post('/customer/submitReview',
+    //   { comment, rating, custId: this.props.id, restId: this.props.match.params.id, name: this.props.name })
+    //   .then((results) => {
+    //     console.log(results);
+    //     this.setState({ reviews: results.data, writeReview: false });
+    //   });
+    this.props.submitReviewMutation({
+      variables: { comment, rating, custId: this.props.id, restId: this.props.match.params.id, name: this.props.name
+      }
+    }).then((data) => {
+      console.log(data);
+      const { status, content } = data.data.submitReview;
+      const reviews = JSON.parse(content);
+      this.setState({ reviews, writeReview: false });
+    });
   }
 
   submitOrder = (e) => {
@@ -96,13 +117,21 @@ class RestaurantInfo extends Component {
     const { type } = menu[index];
     const { quantity } = menu[index];
     const { name } = this.state.restaurant;
-    axios.post('/customer/submitOrder',
-      { quantity, type, restaurant: this.state.restaurant.name, customer: this.props.name, food: food_name, custId: this.props.id, restId: this.props.match.params.id })
-      .then((results) => {
-        console.log(results);
-        menu[index].submitted = true;
-        this.setState({ menu });
-      });
+    // axios.post('/customer/submitOrder',
+    //   { quantity, type, restaurant: this.state.restaurant.name, customer: this.props.name, food: food_name, custId: this.props.id, restId: this.props.match.params.id })
+    //   .then((results) => {
+    //     console.log(results);
+    //     menu[index].submitted = true;
+    //     this.setState({ menu });
+    //   });
+    this.props.submitOrderMutation({
+      variables: { quantity, type, restaurant: name, customer: this.props.name, food: food_name, custId: this.props.id, restId: this.props.match.params.id
+      }
+    }).then((data) => {
+      console.log(data);
+      menu[index].submitted = true;
+      this.setState({ menu });
+    });
   }
 
    commentChangeHandler = (e) => {
@@ -198,4 +227,9 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps)(RestaurantInfo);
+export default compose(
+  graphql(RestaurantInfoMutation, { name: 'RestaurantInfoMutation' }),
+  graphql(submitOrderMutation, { name: 'submitOrderMutation' }),
+  graphql(submitReviewMutation, { name: 'submitReviewMutation' }),
+  connect(mapStateToProps)
+)(RestaurantInfo);

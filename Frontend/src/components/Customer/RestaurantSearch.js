@@ -47,8 +47,7 @@ class RestaurantSearch extends Component {
     // Promise.all(promises).then(() => {
     //   this.setState({ loaded: true });
     // });
-    const loadView = () => {
-    };
+
     searchResults.forEach((result, i) => {
       geocoder.geocode({ address: result.location }, (results, status) => {
         console.log(results);

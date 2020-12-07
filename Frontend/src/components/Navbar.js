@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Redirect } from 'react-router';
-import axios from 'axios';
+import { graphql } from 'react-apollo';
+import { flowRight as compose } from 'lodash';
 import { logout, search } from '../actions/actions';
 import logo from '../yelp.png';
+import { RestaurantSearchMutation } from '../mutations';
 
 // #d32323 = yelp navbar color
 
@@ -22,15 +24,20 @@ class Navbar extends Component {
   searchRestaurant = (e) => {
     e.preventDefault();
     const { search, location, name, mode } = this.state;
-    const data = { name };
-    console.log(`SEARCH:${this.state.search}`);
-    if (search !== '') data.search = search;
-    axios.post('/customer/restaurantSearch', { name })
-      .then((response) => {
-        console.log(response.data);
-        this.props.search(response.data, { search, location, mode, name });
-        this.props.history.push('/customer/restaurantSearch');
-      });
+    // axios.post('/customer/restaurantSearch', { name })
+    //   .then((response) => {
+    //     console.log(response.data);
+    //     this.props.search(response.data, { search, location, mode, name });
+    //     this.props.history.push('/customer/restaurantSearch');
+    //   });
+    this.props.RestaurantSearchMutation({
+      variables: { name }
+    }).then((data) => {
+      console.log(data);
+      const { status, content } = data.data.restaurantSearch;
+      this.props.search(JSON.parse(content), { search, location, mode, name });
+      this.props.history.push('/customer/restaurantSearch');
+    });
   };
 
   searchChangeHandler = (e) => {
@@ -112,10 +119,13 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDisptachToProps = (dispatch) => {
+const mapDispatchToProps = (dispatch) => {
   return {
     logout: () => dispatch(logout()),
     search: (query, values) => dispatch(search(query, values))
   };
 };
-export default connect(mapStateToProps, mapDisptachToProps)(Navbar);
+export default compose(
+  graphql(RestaurantSearchMutation, { name: 'RestaurantSearchMutation' }),
+  connect(mapStateToProps, mapDispatchToProps)
+)(Navbar);

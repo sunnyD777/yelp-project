@@ -1,67 +1,17 @@
 const express = require('express');
 const multer = require('multer');
-const fs = require('fs');
-const AWS = require('aws-sdk');
 // const passport = require('passport');
+const upload = require('../config/s3');
 
 const Router = express.Router();
 // const Customer = require('../Models/CustomerModel');
 const Restaurant = require('../Models/RestaurantModels/RestaurantModel');
 const Customer = require('../Models/CustomerModels/CustomerModel');
-const { ID, SECRET, BUCKET_NAME } = require('../Config/keys');
 
 let restId = null;
 const options = {
   useFindAndModify: false,
   new: true
-};
-const s3 = new AWS.S3({
-  accessKeyId: ID,
-  secretAccessKey: SECRET
-});
-
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, 'Images');
-  },
-  filename(req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  }
-});
-
-const upload = multer({ storage }).single('file');
-
-const uploadFile = async (filePath, fileName, res, profile) => {
-  console.log('IN THE UPLOAD FUNCTION');
-
-  // Read content from the file
-  const fileContent = fs.readFileSync(filePath);
-  // Setting up S3 upload parameters
-  const params = {
-    Bucket: BUCKET_NAME,
-    Key: fileName, // File name you want to save as in S3
-    Body: fileContent,
-    ContentType: 'image/jpeg'
-  };
-
-  // Uploading files to the bucket
-  s3.upload(params, (err, data) => {
-    if (err) {
-      throw err;
-    }
-    console.log(`File uploaded successfully. ${data.Location}`);
-    fs.unlink(filePath, (err) => {
-      if (err) throw err;
-      console.log(`${filePath} was deleted`);
-    });
-
-    if (profile) {
-      Restaurant.findByIdAndUpdate(restId, { img: data.Location }, options, (err, results) => {
-        console.log(results);
-      });
-    }
-    res.send(data.Location);
-  });
 };
 
 Router.post('/', (req, res) => {
@@ -87,17 +37,8 @@ Router.post('/upload', (req, res) => {
     uploadFile(req.file.path, req.file.filename, res, true);
   });
 });
-Router.post('/menu/upload', (req, res) => {
-  upload(req, res, (err) => {
-    console.log('top');
-    if (err instanceof multer.MulterError) {
-      console.log(err);
-    } if (err) {
-      console.log(err);
-    }
-    console.log('bottom');
-    uploadFile(req.file.path, req.file.filename, res, false);
-  });
+Router.post('/menu/upload', upload.single('file'), (req, res) => {
+  res.send(req.file.location);
 });
 
 Router.post('/addToMenu', (req, res) => {

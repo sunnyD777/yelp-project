@@ -112,7 +112,7 @@ export const hideUpload = () => {
 export const menuItemChangeHandler = (e) => {
   return {
     type: 'MENU_ITEM_HANDLER',
-    index: e.target.getAttribute('index'),
+    index: parseInt(e.target.getAttribute('index')),
     key: e.target.getAttribute('keyname'),
     value: e.target.value
   };

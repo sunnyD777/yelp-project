@@ -3,7 +3,8 @@ const Customer = require('../Models/CustomerModels/CustomerModel');
 const Restaurant = require('../Models/RestaurantModels/RestaurantModel');
 const { login } = require('../Mutations/login');
 const { signup } = require('../Mutations/signup');
-const { updateRestaurant } = require('../Mutations/restaurant');
+const { updateRestaurant, updateRestaurantMenu, addMenuItem, changeOrderStatus } = require('../Mutations/restaurant');
+const { updateCustomer, restaurantSearch, restaurantInfo, submitOrder, submitReview } = require('../Mutations/customer');
 
 const {
   GraphQLObjectType,
@@ -16,20 +17,7 @@ const {
 } = graphql;
 
 // dummy data
-const books = [
-  { name: 'Name of the Wind', genre: 'Fantasy', id: '1', authorId: '1' },
-  { name: 'The Final Empire', genre: 'Fantasy', id: '2', authorId: '2' },
-  { name: 'The Hero of Ages', genre: 'Fantasy', id: '4', authorId: '2' },
-  { name: 'The Long Earth', genre: 'Sci-Fi', id: '3', authorId: '3' },
-  { name: 'The Colour of Magic', genre: 'Fantasy', id: '5', authorId: '3' },
-  { name: 'The Light Fantastic', genre: 'Fantasy', id: '6', authorId: '3' },
-];
 
-const authors = [
-  { name: 'Patrick Rothfuss', age: 44, id: '1' },
-  { name: 'Brandon Sanderson', age: 42, id: '2' },
-  { name: 'Terry Pratchett', age: 66, id: '3' }
-];
 const StatusType = new GraphQLObjectType({
   name: 'Status',
   fields: () => ({
@@ -66,7 +54,8 @@ const CustomerOrderType = new GraphQLObjectType({
     type: { type: GraphQLString },
     status: { type: GraphQLString },
     order_time: { type: GraphQLString },
-    quantity: { type: GraphQLInt }
+    quantity: { type: GraphQLInt },
+    restIndex: { type: GraphQLInt },
   })
 });
 
@@ -110,7 +99,8 @@ const RestaurantOrderType = new GraphQLObjectType({
     type: { type: GraphQLString },
     status: { type: GraphQLString },
     order_time: { type: GraphQLString },
-    quantity: { type: GraphQLInt }
+    quantity: { type: GraphQLInt },
+    custIndex: { type: GraphQLInt },
   })
 });
 
@@ -150,66 +140,10 @@ const RestaurantMenuType = new GraphQLObjectType({
   })
 });
 
-const BookType = new GraphQLObjectType({
-  name: 'Book',
-  fields: () => ({
-    id: { type: GraphQLID },
-    name: { type: GraphQLString },
-    genre: { type: GraphQLString },
-    author: {
-      type: AuthorType,
-      resolve(parent, args) {
-        return authors.find((author) => author.id === parent.authorId);
-      }
-    }
-  })
-});
-
-const AuthorType = new GraphQLObjectType({
-  name: 'Author',
-  fields: () => ({
-    id: { type: GraphQLID },
-    name: { type: GraphQLString },
-    age: { type: GraphQLInt },
-    books: {
-      type: new GraphQLList(BookType),
-      resolve(parent, args) {
-        return books.filter((book) => book.authorId === parent.id);
-      }
-    }
-  })
-});
-
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   description: 'Root Query',
   fields: {
-    book: {
-      type: BookType,
-      args: { id: { type: GraphQLID } },
-      resolve(parent, args) {
-        return books.find((book) => book.id === args.id);
-      }
-    },
-    author: {
-      type: AuthorType,
-      args: { id: { type: GraphQLID } },
-      resolve(parent, args) {
-        return authors.find((author) => author.id === args.id);
-      }
-    },
-    books: {
-      type: new GraphQLList(BookType),
-      resolve(parent, args) {
-        return books;
-      }
-    },
-    authors: {
-      type: new GraphQLList(AuthorType),
-      resolve(parent, args) {
-        return authors;
-      }
-    },
     customers: {
       type: new GraphQLList(CustomerType),
       async resolve(parent, args) {
@@ -224,49 +158,28 @@ const RootQuery = new GraphQLObjectType({
         return restaurants;
       }
     },
+    customer: {
+      type: CustomerType,
+      args: { id: { type: GraphQLID } },
+      async resolve(parent, args) {
+        const customer = await Customer.findById(args.id);
+        return customer;
+      }
+    },
+    restaurant: {
+      type: RestaurantType,
+      args: { id: { type: GraphQLID } },
+      async resolve(parent, args) {
+        const restaurant = await Restaurant.findById(args.id);
+        return restaurant;
+      }
+    },
   }
 });
 
 const Mutation = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
-    addAuthor: {
-      type: AuthorType,
-      args: {
-        name: { type: GraphQLString },
-        age: { type: GraphQLInt },
-        id: { type: GraphQLID }
-      },
-      resolve(parent, args) {
-        const author = {
-          name: args.name,
-          age: args.age,
-          id: args.id
-        };
-        authors.push(author);
-        console.log('Authors', authors);
-        return author;
-      }
-    },
-
-    addBook: {
-      type: BookType,
-      args: {
-        name: { type: GraphQLString },
-        genre: { type: GraphQLString },
-        authorId: { type: GraphQLID },
-      },
-      resolve(parent, args) {
-        const book = {
-          name: args.name,
-          genre: args.genre,
-          authorId: args.authorId,
-          id: books.length + 1
-        };
-        books.push(book);
-        return book;
-      }
-    },
     login: {
       type: StatusType,
       args: {
@@ -304,7 +217,114 @@ const Mutation = new GraphQLObjectType({
       resolve(parent, args) {
         return updateRestaurant(args);
       }
-    }
+    },
+    updateRestaurantMenu: {
+      type: StatusType,
+      args: {
+        id: { type: GraphQLID },
+        menu: { type: GraphQLString }
+      },
+      resolve(parent, args) {
+        return updateRestaurantMenu(args);
+      }
+    },
+    addMenuItem: {
+      type: StatusType,
+      args: {
+        id: { type: GraphQLID },
+        newItem: { type: GraphQLString }
+      },
+      resolve(parent, args) {
+        return addMenuItem(args);
+      }
+    },
+    changeOrderStatus: {
+      type: StatusType,
+      args: {
+        restId: { type: GraphQLID },
+        custId: { type: GraphQLID },
+        status: { type: GraphQLString },
+        index: { type: GraphQLInt }
+      },
+      resolve(parent, args) {
+        return changeOrderStatus(args);
+      }
+    },
+    updateCustomer: {
+      type: StatusType,
+      args: {
+        id: { type: GraphQLID },
+        name: { type: GraphQLString },
+        email: { type: GraphQLString },
+        phone_num: { type: GraphQLString },
+        about: { type: GraphQLString },
+        birthday: { type: GraphQLString },
+        city: { type: GraphQLString },
+        state: { type: GraphQLString },
+        country: { type: GraphQLString },
+        nickname: { type: GraphQLString },
+        img: { type: GraphQLString },
+      },
+      resolve(parent, args) {
+        return updateCustomer(args);
+      }
+    },
+    restaurantSearch: {
+      type: StatusType,
+      args: {
+        id: { type: GraphQLID },
+        name: { type: GraphQLString },
+        email: { type: GraphQLString },
+        phone_num: { type: GraphQLString },
+        about: { type: GraphQLString },
+        birthday: { type: GraphQLString },
+        city: { type: GraphQLString },
+        state: { type: GraphQLString },
+        country: { type: GraphQLString },
+        nickname: { type: GraphQLString },
+        img: { type: GraphQLString },
+      },
+      resolve(parent, args) {
+        return restaurantSearch(args);
+      }
+    },
+    restaurantInfo: {
+      type: StatusType,
+      args: {
+        id: { type: GraphQLID },
+      },
+      resolve(parent, args) {
+        return restaurantInfo(args);
+      }
+    },
+    submitOrder: {
+      type: StatusType,
+      args: {
+        custId: { type: GraphQLID },
+        restId: { type: GraphQLID },
+        quantity: { type: GraphQLInt },
+        type: { type: GraphQLString },
+        restaurant: { type: GraphQLString },
+        customer: { type: GraphQLString },
+        food: { type: GraphQLString },
+      },
+      resolve(parent, args) {
+        return submitOrder(args);
+      }
+    },
+    submitReview: {
+      type: StatusType,
+      args: {
+        custId: { type: GraphQLID },
+        restId: { type: GraphQLID },
+        rating: { type: GraphQLInt },
+        comment: { type: GraphQLString },
+        name: { type: GraphQLString },
+      },
+      resolve(parent, args) {
+        return submitReview(args);
+      }
+    },
   }
 });
 

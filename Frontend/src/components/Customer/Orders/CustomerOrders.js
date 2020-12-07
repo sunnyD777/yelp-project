@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
+import { graphql } from 'react-apollo';
+import { flowRight as compose } from 'lodash';
+import { getCustomerOrders } from '../../../queries';
 
-class RestaurantOrders extends Component {
+class CustomerOrders extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -12,13 +15,13 @@ class RestaurantOrders extends Component {
     };
   }
 
-  componentDidMount() {
-    axios.get('/customer/orders')
-      .then((response) => {
-        console.log(response.data);
-        this.setState({ orders: response.data, allOrders: response.data });
-      });
-  }
+  // componentDidMount() {
+  //   axios.get('/customer/orders')
+  //     .then((response) => {
+  //       console.log(response.data);
+  //       this.setState({ orders: response.data, allOrders: response.data });
+  //     });
+  // }
 
   getRestaurantProfile = (e) => {
     this.props.history.push(`restaurantInfo/${e.target.getAttribute('rest-id')}`);
@@ -54,6 +57,40 @@ class RestaurantOrders extends Component {
     this.setState({ orders });
   }
 
+  displayOrders = () => {
+    const { data } = this.props;
+    console.log(this.props);
+    if (data.loading) {
+      console.log('LOADING');
+      return (<div>Loading orders...</div>);
+    }
+    console.log('NOT LOADING');
+    return data.customer.orders.map((order, i) => {
+      return (
+        <tr>
+          <td className="restName" rest-id={order.restId} onClick={this.getRestaurantProfile}>
+            {order.restaurant}
+          </td>
+          <td>
+            {order.food}
+          </td>
+          <td>
+            {order.type}
+          </td>
+          <td>
+            {order.status}
+          </td>
+          <td>
+            {order.order_time}
+          </td>
+          <td>
+            <button index={i} onClick={this.cancelOrder} className="ybtn ybtn--primary ybtn--small">Cancel</button>
+          </td>
+        </tr>
+      );
+    });
+  }
+
   render() {
     return (
       <div className="orders">
@@ -79,30 +116,7 @@ class RestaurantOrders extends Component {
             <th>Order Time</th>
             <th>Cancel Order</th>
           </tr>
-          {this.state.orders.map((order, i) => {
-            return (
-              <tr>
-                <td className="restName" rest-id={order.restId} onClick={this.getRestaurantProfile}>
-                  {order.restaurant}
-                </td>
-                <td>
-                  {order.food}
-                </td>
-                <td>
-                  {order.type}
-                </td>
-                <td>
-                  {order.status}
-                </td>
-                <td>
-                  {order.order_time}
-                </td>
-                <td>
-                  <button index={i} onClick={this.cancelOrder} className="ybtn ybtn--primary ybtn--small">Cancel</button>
-                </td>
-              </tr>
-            );
-          })}
+          {this.displayOrders()}
         </table>
       </div>
     );
@@ -115,4 +129,9 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps)(RestaurantOrders);
+export default compose(
+  connect(mapStateToProps),
+  graphql(getCustomerOrders, {
+    options: (props) => ({ variables: { id: props.id } })
+  })
+)(CustomerOrders);

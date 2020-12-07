@@ -1,6 +1,10 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
+import { graphql } from 'react-apollo';
+import { flowRight as compose } from 'lodash';
+import { getRestaurantOrders } from '../../../queries';
+import { changeOrderStatusMutation } from '../../../mutations';
 
 class RestaurantOrders extends Component {
   constructor(props) {
@@ -12,10 +16,10 @@ class RestaurantOrders extends Component {
   }
 
   componentDidMount() {
-    axios.get('/restaurant/orders')
-      .then((response) => {
-        this.setState({ orders: response.data });
-      });
+    // axios.get('/restaurant/orders')
+    //   .then((response) => {
+    //     this.setState({ orders: response.data });
+    //   });
   }
 
   getCustomerProfile = (e) => {
@@ -23,17 +27,24 @@ class RestaurantOrders extends Component {
   }
 
   statusChangeHandler = (e) => {
-    const index = e.target.getAttribute('index');
+    const index = parseInt(e.target.getAttribute('index'));
     const custId = e.target.getAttribute('custId');
     const status = e.target.value;
-    const { orders } = this.state;
+    const { orders } = this.props.data.restaurant;
     orders[index].status = status;
     console.log(status);
-    axios.post('/restaurant/changeOrderStatus', { index, status, custId })
-      .then((response) => {
-        console.log(response.data);
-      });
-    this.setState({ orders });
+    // axios.post('/restaurant/changeOrderStatus', { index, status, custId })
+    //   .then((response) => {
+    //     console.log(response.data);
+    //   });
+    // this.setState({ orders });
+    this.props.changeOrderStatusMutation({
+      variables: { restId: this.props.id, index, status, custId
+      }
+    }).then((data) => {
+      console.log(data);
+      this.setState({ orders: data });
+    });
   }
 
   filterChangeHandler = (e) => {
@@ -64,6 +75,42 @@ class RestaurantOrders extends Component {
     this.setState({ filter, orders });
   }
 
+  displayOrders = () => {
+    const { data } = this.props;
+    console.log(this.props);
+    if (data.loading) {
+      console.log('LOADING');
+      return (<div>Loading orders...</div>);
+    }
+    console.log('NOT LOADING');
+    return data.restaurant.orders.map((order, i) => {
+      return (
+        <tr>
+          <td className="customerName" cust-id={order.custId} onClick={this.getCustomerProfile}>
+            {order.customer}
+          </td>
+          <td>
+            {order.food}
+          </td>
+          <td>
+            {order.type}
+          </td>
+          <td>
+            <select className="status" index={i} custId={order.custId} onChange={this.statusChangeHandler} value={order.status}>
+              <option> TBD </option>
+              <option>Preparing</option>
+              <option>{order.type === 'Delivery' ? 'On The Way' : 'Pick Up Ready'}</option>
+              <option>{order.type === 'Delivery' ? 'Delivered' : 'Picked Up'}</option>
+            </select>
+          </td>
+          <td>
+            {order.order_time}
+          </td>
+        </tr>
+      );
+    });
+  }
+
   render() {
     return (
       <div className="orders">
@@ -84,32 +131,7 @@ class RestaurantOrders extends Component {
             <th>Status</th>
             <th>Order Time</th>
           </tr>
-          {this.state.orders.map((order, i) => {
-            return (
-              <tr>
-                <td className="customerName" cust-id={order.custId} onClick={this.getCustomerProfile}>
-                  {order.customer}
-                </td>
-                <td>
-                  {order.food}
-                </td>
-                <td>
-                  {order.type}
-                </td>
-                <td>
-                  <select className="status" index={i} custId={order.custId} onChange={this.statusChangeHandler} value={order.status}>
-                    <option> TBD </option>
-                    <option>Preparing</option>
-                    <option>{order.type === 'Delivery' ? 'On The Way' : 'Pick Up Ready'}</option>
-                    <option>{order.type === 'Delivery' ? 'Delivered' : 'Picked Up'}</option>
-                  </select>
-                </td>
-                <td>
-                  {order.order_time}
-                </td>
-              </tr>
-            );
-          })}
+          {this.displayOrders()}
         </table>
       </div>
     );
@@ -122,4 +144,10 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps)(RestaurantOrders);
+export default compose(
+  connect(mapStateToProps),
+  graphql(getRestaurantOrders, {
+    options: (props) => ({ variables: { id: props.id } })
+  }),
+  graphql(changeOrderStatusMutation, { name: 'changeOrderStatusMutation' }),
+)(RestaurantOrders);

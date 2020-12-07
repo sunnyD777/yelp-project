@@ -9,7 +9,8 @@ const restaurantOrderSchema = new Schema({
   type: { type: String, required: true, default: 'Delivery' },
   status: { type: String, required: true, default: 'TBD' },
   order_time: { type: Date, default: Date.now() },
-  quantity: { type: Number, default: 1 }
+  quantity: { type: Number, default: 1 },
+  custIndex: { type: Number }
 },
 {
   versionKey: false,
